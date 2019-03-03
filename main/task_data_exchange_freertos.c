@@ -26,11 +26,25 @@ void taskA(void *p)
 {
     while(1){
         if(xSemaphoreTake(semaphore,1000)){
+            
             printf("TaskA running here\n");
             kaynak();
+
+            for(size_t i = 0; i < 10; i++)
+            {
+                printf("i = %d\n",i);
+                vTaskDelay(500/portTICK_RATE_MS);
+                if (i == 9) {
+                    xSemaphoreGive(semaphore);
+                }
+                
+            }
+            
+            
         }else{
             printf("taskA failed\n");
         }
+        
     }
     
 }
@@ -39,10 +53,11 @@ void taskB(void *p)
 {
     while(1){
         if(xSemaphoreTake(semaphore,1000)){
-            printf("TaskA running here\n");
+            printf("TaskB running here\n");
             kaynak();
+          //  xSemaphoreGive(semaphore);
         }else{
-            printf("taskA failed\n");
+            printf("taskB failed\n");
         }
 
     }
