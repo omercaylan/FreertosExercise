@@ -18,6 +18,8 @@
 #include "sdkconfig.h"
 #include "freertos/semphr.h"
 #include "freertos/timers.h"
+#define LOOP 1
+
 xSemaphoreHandle semaphore = NULL;
 void kaynak()
 {
@@ -25,7 +27,7 @@ void kaynak()
 }
 void taskA(void *p)
 {
-    while (1)
+    while (LOOP)
     {
         printf("taskA\n");
         if (xSemaphoreTake(semaphore, 1000))
@@ -35,7 +37,7 @@ void taskA(void *p)
             for (size_t i = 0; i < 10; i++)
             {
                 printf("i = %d\n", i);
-                vTaskDelay(500 / portTICK_RATE_MS);
+                vTaskDelay(1000 / portTICK_RATE_MS);
                 if (i == 9)
                 {
                     xSemaphoreGive(semaphore);
@@ -51,19 +53,21 @@ void taskA(void *p)
 
 void taskB(void *p)
 {
-    while (1)
+    //TODO: Task init here
+    while (LOOP)
     {
         printf("taskB\n");
         if (xSemaphoreTake(semaphore, 1000))
         {
             printf("TaskB running here\n");
             kaynak();
-            //  xSemaphoreGive(semaphore);
+            xSemaphoreGive(semaphore);
         }
         else
         {
             printf("taskB failed\n");
         }
+        vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }
 
