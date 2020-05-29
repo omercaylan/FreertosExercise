@@ -38,7 +38,7 @@ void taskA(void *p)
                 vTaskDelay(500 / portTICK_RATE_MS);
                 if (i == 9)
                 {
-                        xSemaphoreGive(semaphore);
+                    xSemaphoreGive(semaphore);
                 }
             }
         }
