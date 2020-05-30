@@ -18,19 +18,37 @@
 #include "sdkconfig.h"
 #include "freertos/semphr.h"
 #include "freertos/timers.h"
+#include "os_Handles.h"
+
 #define LOOP 1
 
 xSemaphoreHandle semaphore = NULL;
+OSHANDLES taskSystem;
+
+void SystemInit()
+{
+    taskSystem.queue = xQueueCreate(5, sizeof(uint32_t));
+    taskSystem.lock = xSemaphoreCreateMutex();
+}
+
+void parameterInit()
+{
+    taskSystem.FunctionFunc = SystemInit;
+}
+
 void kaynak()
 {
     printf("important resource\n");
 }
+
 void taskA(void *p)
 {
+    OSHANDLES *osHandles = (*OSHANDLES)p;
+
     while (LOOP)
     {
         printf("taskA\n");
-        if (xSemaphoreTake(semaphore, 1000))
+        if (xSemaphoreTake(osHandles->lock, 1000))
         {
             printf("TaskA running here\n");
             kaynak();
@@ -40,7 +58,7 @@ void taskA(void *p)
                 vTaskDelay(1000 / portTICK_RATE_MS);
                 if (i == 9)
                 {
-                    xSemaphoreGive(semaphore);
+                    xSemaphoreGive(osHandles->lock);
                 }
             }
         }
@@ -54,14 +72,16 @@ void taskA(void *p)
 void taskB(void *p)
 {
     //TODO: Task init here
+    OSHANDLES *osHandles = (OSHANDLES *)p;
+
     while (LOOP)
     {
         printf("taskB\n");
-        if (xSemaphoreTake(semaphore, 1000))
+        if (xSemaphoreTake(osHandles->lock, 1000))
         {
             printf("TaskB running here\n");
             kaynak();
-            xSemaphoreGive(semaphore);
+            xSemaphoreGive(osHandles->lock);
         }
         else
         {
@@ -76,6 +96,6 @@ void taskB(void *p)
 void app_main()
 {
     semaphore = xSemaphoreCreateMutex();
-    xTaskCreate(taskA, "taskA", 2048, NULL, 10, NULL);
-    xTaskCreate(taskB, "taskB", 2048, NULL, 10, NULL);
+    xTaskCreate(taskA, "taskA", 2048, &taskSystem, 10, &taskSystem.task.StateMachineTask);
+    xTaskCreate(taskB, "taskB", 2048, &taskSystem, 10, &taskSystem.task.LoggingTask);
 }
