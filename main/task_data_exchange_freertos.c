@@ -22,7 +22,6 @@
 
 #define LOOP 1
 
-xSemaphoreHandle semaphore = NULL;
 OSHANDLES taskSystem;
 
 void SystemInit()
@@ -95,7 +94,7 @@ void taskB(void *p)
 
 void app_main()
 {
-    semaphore = xSemaphoreCreateMutex();
+    parameterInit(void);
     xTaskCreate(taskA, "taskA", 2048, &taskSystem, 10, &taskSystem.task.StateMachineTask);
     xTaskCreate(taskB, "taskB", 2048, &taskSystem, 10, &taskSystem.task.LoggingTask);
 }
