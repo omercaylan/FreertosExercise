@@ -32,7 +32,7 @@ void SystemInit()
 
 void parameterInit()
 {
-    taskSystem.FunctionFunc = SystemInit;
+    taskSystem.init = SystemInit;
 }
 
 void kaynak()
@@ -95,6 +95,7 @@ void taskB(void *p)
 void app_main()
 {
     parameterInit(void);
+    taskSystem.init();
     xTaskCreate(taskA, "taskA", 2048, &taskSystem, 10, &taskSystem.task.StateMachineTask);
     xTaskCreate(taskB, "taskB", 2048, &taskSystem, 10, &taskSystem.task.LoggingTask);
 }

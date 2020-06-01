@@ -62,7 +62,7 @@ typedef struct
         xTaskHandle StateMachineTask;
     } task;
 
-    void (*FunctionFunc)();
+    void (*init)(void);
 
 } OSHANDLES;
 
