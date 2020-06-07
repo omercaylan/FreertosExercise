@@ -20,7 +20,7 @@
 #include "freertos/timers.h"
 #include "os_Handles.h"
 
-#define LOOP 1
+#define TASK_LOOP 1
 
 //All task data here
 OSHANDLES taskSystem;
@@ -38,6 +38,13 @@ void parameterInit()
     //other system parameter init here
     taskSystem.init = SystemInit;
 }
+#define MAX_MESSAGE_LEN 20
+//shared data must be global or static
+struct Message_t
+{
+    uint8_t messageType;
+    char data[MAX_MESSAGE_LEN];
+} message;
 
 //Sourse may be spi or i2c etc....
 void importantSourse()
@@ -48,13 +55,17 @@ void importantSourse()
 void taskA(void *p)
 {
     OSHANDLES *osHandles = (*OSHANDLES)p;
-    while (LOOP)
+    while (TASK_LOOP)
     {
         printf("taskA\n");
         if (xSemaphoreTake(osHandles->lock, 1000))
         {
             printf("TaskA running here and take semaphore\n");
             importantSourse();
+            if (xQueueSend(osHandles->queue, &message, (TickType_t)10) != pdPASS)
+            {
+                /**! Failed to post the message, even after 10 ticks. */
+            }
             for (size_t i = 0; i < 10; i++)
             {
                 printf("i = %d\n", i);
@@ -76,13 +87,19 @@ void taskB(void *p)
 {
     //TODO: Task init here
     OSHANDLES *osHandles = (OSHANDLES *)p;
-
-    while (LOOP)
+    struct message receiveMessage;
+    while (TASK_LOOP)
     {
         printf("taskB\n");
         if (xSemaphoreTake(osHandles->lock, 1000))
         {
+            if (xQueueReceive(osHandles->queue, &(receiveMessage), (TickType_t)10) == pdPASS)
+            {
+                /* xRxedStructure now contains a copy of xMessage. */
+            }
             printf("TaskB running here and take semaphore\n");
+            osHandles->queue
+
             importantSourse();
             xSemaphoreGive(osHandles->lock);
         }
